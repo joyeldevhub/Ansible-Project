@@ -1,0 +1,7 @@
+---
+- name: Jump Host Setup
+  hosts: localhost
+  vars_files:
+    - ../vars/all.yml
+  roles:
+    - jump_host

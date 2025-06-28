@@ -1,0 +1,7 @@
+---
+- name: VPC and Network Setup
+  hosts: localhost
+  vars_files:
+    - ../vars/all.yml
+  roles:
+    - vpc_setup

@@ -1,0 +1,10 @@
+---
+- name: Create an AMI with services installed
+  ec2_ami:
+    instance_id: "{{ instance_id }}"
+    name: "{{ ami_name }}"
+    region: "{{ region }}"
+    wait: yes
+    tags:
+      Name: "{{ ami_name }}"
+  register: ami

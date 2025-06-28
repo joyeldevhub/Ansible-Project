@@ -1,0 +1,20 @@
+---
+- name: Provision EC2 instance in public subnet
+  ec2:
+    key_name: "{{ key_name }}"
+    instance_type: "{{ instance_type }}"
+    image: "{{ ami_id }}"
+    wait: yes
+    region: "{{ region }}"
+    vpc_subnet_id: "{{ public_subnets.results[0].subnet.id }}"
+    security_group: "{{ jump_host_sg.group_id }}"
+    assign_public_ip: yes
+    tags:
+      Name: "{{ jump_host_name }}"
+  register: jump_host_instance
+
+- name: Attach IAM role to jump host
+  ec2_instance:
+    instance_ids: "{{ jump_host_instance.instances[0].id }}"
+    region: "{{ region }}"
+    iam_instance_profile_name: "{{ iam_role }}"

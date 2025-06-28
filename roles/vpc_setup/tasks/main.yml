@@ -1,0 +1,81 @@
+---
+- name: Create VPC
+  ec2_vpc:
+    name: "{{ vpc_name }}"
+    cidr_block: "{{ vpc_cidr }}"
+    region: "{{ region }}"
+    tags:
+      Name: "{{ vpc_name }}"
+  register: vpc
+
+- name: Create public subnets
+  ec2_vpc_subnet:
+    vpc_id: "{{ vpc.vpc.id }}"
+    cidr: "{{ item.cidr }}"
+    availability_zone: "{{ item.az }}"
+    region: "{{ region }}"
+    tags:
+      Name: "{{ item.name }}"
+  loop: "{{ public_subnets }}"
+  register: public_subnets
+
+- name: Create private subnets
+  ec2_vpc_subnet:
+    vpc_id: "{{ vpc.vpc.id }}"
+    cidr: "{{ item.cidr }}"
+    availability_zone: "{{ item.az }}"
+    region: "{{ region }}"
+    tags:
+      Name: "{{ item.name }}"
+  loop: "{{ private_subnets }}"
+  register: private_subnets
+
+- name: Create Internet Gateway
+  ec2_vpc_igw:
+    vpc_id: "{{ vpc.vpc.id }}"
+    state: present
+    region: "{{ region }}"
+    tags:
+      Name: "{{ igw_name }}"
+  register: igw
+
+- name: Attach Internet Gateway to VPC
+  ec2_vpc_igw:
+    vpc_id: "{{ vpc.vpc.id }}"
+    igw_id: "{{ igw.igw.id }}"
+    state: attached
+    region: "{{ region }}"
+
+- name: Create NAT Gateway
+  ec2_vpc_nat_gateway:
+    allocation_id: "{{ nat_eip.allocation_id }}"
+    subnet_id: "{{ public_subnets.results[0].subnet.id }}"
+    state: present
+    region: "{{ region }}"
+    tags:
+      Name: "{{ nat_name }}"
+  register: nat_gateway
+
+- name: Configure route tables for public subnets
+  ec2_vpc_route_table:
+    vpc_id: "{{ vpc.vpc.id }}"
+    route_table_id: "{{ item.route_table_id }}"
+    routes:
+      - dest: 0.0.0.0/0
+        gateway_id: "{{ igw.igw.id }}"
+    tags:
+      Name: "{{ item.name }}"
+    region: "{{ region }}"
+  loop: "{{ public_route_tables }}"
+
+- name: Configure route tables for private subnets
+  ec2_vpc_route_table:
+    vpc_id: "{{ vpc.vpc.id }}"
+    route_table_id: "{{ item.route_table_id }}"
+    routes:
+      - dest: 0.0.0.0/0
+        gateway_id: "{{ nat_gateway.nat_gateway.nat_gateway_id }}"
+    tags:
+      Name: "{{ item.name }}"
+    region: "{{ region }}"
+  loop: "{{ private_route_tables }}"

@@ -1,0 +1,7 @@
+---
+- name: Instance Provisioning
+  hosts: localhost
+  vars_files:
+    - ../vars/all.yml
+  roles:
+    - instance_provisioning

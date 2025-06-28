@@ -1,0 +1,34 @@
+---
+- name: Read service configuration
+  include_vars:
+    file: "{{ service_config_file }}"
+    name: service_config
+
+- name: Clone/pull service repositories
+  git:
+    repo: "{{ item.repo }}"
+    dest: "{{ item.dest }}"
+    version: "{{ item.version }}"
+  loop: "{{ service_config.services }}"
+
+- name: Install dependencies
+  npm:
+    path: "{{ item.dest }}"
+  loop: "{{ service_config.services }}"
+
+- name: Configure environment variables
+  template:
+    src: "{{ item.env_file }}"
+    dest: "{{ item.dest }}/env"
+  loop: "{{ service_config.services }}"
+
+- name: Create a new folder and symlink
+  file:
+    path: "{{ item.dest }}/current"
+    state: link
+    src: "{{ item.dest }}/new"
+  loop: "{{ service_config.services }}"
+
+- name: Start services using PM2
+  command: "pm2 start {{ item.script }}"
+  loop: "{{ service_config.services }}"

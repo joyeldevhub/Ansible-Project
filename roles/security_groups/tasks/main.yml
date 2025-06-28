@@ -1,0 +1,34 @@
+---
+- name: Create common security group for private instances
+  ec2_group:
+    name: "{{ private_sg_name }}"
+    vpc_id: "{{ vpc.vpc.id }}"
+    region: "{{ region }}"
+    description: "Security group for private instances"
+    rules:
+      - proto: tcp
+        from_port: 22
+        to_port: 22
+        cidr_ip: "{{ private_sg_cidr }}"
+      - proto: tcp
+        from_port: 0
+        to_port: 65535
+        cidr_ip: "{{ private_sg_cidr }}"
+    tags:
+      Name: "{{ private_sg_name }}"
+  register: private_sg
+
+- name: Create security group for jump host
+  ec2_group:
+    name: "{{ jump_host_sg_name }}"
+    vpc_id: "{{ vpc.vpc.id }}"
+    region: "{{ region }}"
+    description: "Security group for jump host"
+    rules:
+      - proto: tcp
+        from_port: 22
+        to_port: 22
+        cidr_ip: "{{ jump_host_sg_cidr }}"
+    tags:
+      Name: "{{ jump_host_sg_name }}"
+  register: jump_host_sg

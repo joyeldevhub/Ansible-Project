@@ -1,0 +1,7 @@
+---
+- name: Service Deployment
+  hosts: localhost
+  vars_files:
+    - ../vars/all.yml
+  roles:
+    - service_deployment

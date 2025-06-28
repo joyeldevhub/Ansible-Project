@@ -1,0 +1,14 @@
+---
+services:
+  - name: service1
+    repo: "https://github.com/user/service1.git"
+    dest: "/opt/service1"
+    version: "main"
+    env_file: "service1.env"
+    script: "service1.js"
+  - name: service2
+    repo: "https://github.com/user/service2.git"
+    dest: "/opt/service2"
+    version: "main"
+    env_file: "service2.env"
+    script: "service2.js"

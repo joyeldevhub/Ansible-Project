@@ -1,0 +1,7 @@
+---
+- name: Security Groups Setup
+  hosts: localhost
+  vars_files:
+    - ../vars/all.yml
+  roles:
+    - security_groups

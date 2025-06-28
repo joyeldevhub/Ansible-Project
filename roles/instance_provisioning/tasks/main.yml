@@ -1,0 +1,25 @@
+---
+- name: Read service configuration
+  include_vars:
+    file: "{{ service_config_file }}"
+    name: service_config
+
+- name: Provision EC2 instances in private subnets
+  ec2:
+    key_name: "{{ key_name }}"
+    instance_type: "{{ instance_type }}"
+    image: "{{ ami_id }}"
+    wait: yes
+    region: "{{ region }}"
+    vpc_subnet_id: "{{ private_subnets.results[0].subnet.id }}"
+    security_group: "{{ private_sg.group_id }}"
+    assign_public_ip: no
+    tags:
+      Name: "{{ instance_name }}"
+  loop: "{{ service_config.instances }}"
+  register: instances
+
+- name: Store instance details
+  copy:
+    content: "{{ instances | to_nice_json }}"
+    dest: "{{ instances_file }}"
